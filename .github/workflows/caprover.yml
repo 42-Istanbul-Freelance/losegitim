@@ -1,0 +1,38 @@
+# Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
+
+name: CapRover Yükleyici
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  CapRoverYukleyici:
+    name   : Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Depo
+        uses: actions/checkout@v6.0.1
+        with:
+          fetch-depth: 2
+
+      - name: CapRover TarBall
+        uses: a7ul/tar-action@v1.2.0
+        with:
+          command: c
+          cwd    : "./"
+          files  : ./
+          outPath: deploy.tar
+
+      - name: Deploy
+        uses: caprover/deploy-from-github@v1.1.2
+        with:
+          server: https://captain.ft.42freelance.com
+          app   : losegitim
+          token : ${{ secrets.APP_TOKEN }}
