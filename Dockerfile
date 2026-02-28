@@ -2,8 +2,7 @@ FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.18/main' >> /etc/apk/repositories
-RUN apk add --no-cache libc6-compat openssl openssl-dev gcompat libssl1.1
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
@@ -17,8 +16,6 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV PRISMA_CLIENT_ENGINE_TYPE="binary"
-ENV PRISMA_CLI_QUERY_ENGINE_TYPE="binary"
 
 RUN npx prisma generate
 RUN npm run build
