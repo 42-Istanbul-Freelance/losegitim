@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Login() {
     const [tcNo, setTcNo] = useState("");
@@ -84,6 +85,10 @@ export default function Login() {
                         Giriş Yap
                     </button>
                 </form>
+
+                <div style={{ textAlign: "center", marginTop: "20px", fontSize: "14px", color: "var(--text-light)" }}>
+                    Hesabınız yok mu? <Link href="/register" style={{ color: "var(--primary-color)", fontWeight: "600", textDecoration: "none" }}>Kayıt Olun</Link>
+                </div>
             </div>
         </div>
     );

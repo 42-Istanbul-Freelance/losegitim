@@ -8,7 +8,15 @@ async function main() {
         create: {
             tcNo: '12345678912',
             name: 'Örnek Eğitmen',
+            surname: 'Testoğlu',
+            birthDate: '1990 01 01',
+            phone: '05554443322',
+            email: 'admin@losev.org.tr',
+            city: 'Ankara',
+            district: 'Çankaya',
+            schoolName: 'Gazi Üniversitesi',
             password: 'admin',
+            role: 'ADMIN',
         },
     })
 

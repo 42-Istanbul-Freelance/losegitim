@@ -32,14 +32,6 @@ export default function AdminDashboard() {
     // Açık/Kapalı Kategorileri Tutma
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
-    // Yeni Eğitmen Form Stateleri
-    const [showAddUser, setShowAddUser] = useState(false);
-    const [newUserName, setNewUserName] = useState("");
-    const [newUserTc, setNewUserTc] = useState("");
-    const [newUserPass, setNewUserPass] = useState("");
-    const [addUserMsg, setAddUserMsg] = useState({ text: "", type: "" });
-    const [addLoading, setAddLoading] = useState(false);
-
     const router = useRouter();
 
     // Basit Admin Kontrolü
@@ -73,96 +65,16 @@ export default function AdminDashboard() {
         fetchAdminData();
     }, []);
 
-    const handleAddUser = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setAddLoading(true);
-        setAddUserMsg({ text: "", type: "" });
-
-        try {
-            const res = await fetch("/api/admin/create-user", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: newUserName, tcNo: newUserTc, password: newUserPass }),
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                setAddUserMsg({ text: data.message, type: "success" });
-                setNewUserName("");
-                setNewUserTc("");
-                setNewUserPass("");
-                // Bir süre sonra mesajı temizle
-                setTimeout(() => {
-                    setShowAddUser(false);
-                    setAddUserMsg({ text: "", type: "" });
-                }, 2500);
-            } else {
-                setAddUserMsg({ text: data.message, type: "error" });
-            }
-        } catch (err) {
-            setAddUserMsg({ text: "Bağlantı hatası oluştu.", type: "error" });
-        } finally {
-            setAddLoading(false);
-        }
-    };
-
     return (
         <div className="container fade-in">
             <div className="page-header" style={{ marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
                 <div>
                     <h1 className="page-title" style={{ textAlign: "left", marginBottom: "5px" }}>Yönetim Paneli (Yetkili)</h1>
                     <p className="page-desc" style={{ textAlign: "left" }}>
-                        Tüm konferansları, katılımcıları yönetin ve yeni eğitmen ekleyin.
+                        Tüm konferansları ve katılımcıları yönetin.
                     </p>
                 </div>
-                <button
-                    onClick={() => setShowAddUser(!showAddUser)}
-                    className={showAddUser ? "btn-secondary" : "btn-primary"}
-                >
-                    {showAddUser ? "Kapat" : "+ Yeni Eğitmen Ekle"}
-                </button>
             </div>
-
-            {showAddUser && (
-                <div style={{ background: "var(--white)", padding: "24px", borderRadius: "16px", marginBottom: "30px", boxShadow: "var(--shadow-lg)", border: "1px solid #e2e8f0" }} className="fade-in">
-                    <h3 style={{ marginBottom: "15px", color: "var(--primary-color)" }}>Sisteme Eğitmen Tanımla</h3>
-
-                    {addUserMsg.text && (
-                        <div style={{ padding: "10px", marginBottom: "15px", borderRadius: "8px", background: addUserMsg.type === "success" ? "#dcfce3" : "#fee2e2", color: addUserMsg.type === "success" ? "#166534" : "#991b1b" }}>
-                            {addUserMsg.text}
-                        </div>
-                    )}
-
-                    <form onSubmit={handleAddUser} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "15px", alignItems: "end" }}>
-                        <div>
-                            <label className="form-label" htmlFor="newUserName">Ad Soyad</label>
-                            <input
-                                type="text" id="newUserName" className="form-input"
-                                value={newUserName} onChange={(e) => setNewUserName(e.target.value)} required
-                            />
-                        </div>
-                        <div>
-                            <label className="form-label" htmlFor="newUserTc">TC Kimlik No</label>
-                            <input
-                                type="text" id="newUserTc" className="form-input"
-                                value={newUserTc} onChange={(e) => setNewUserTc(e.target.value)}
-                                maxLength={11} pattern="\d{11}" title="11 haneli TC no giriniz" required
-                            />
-                        </div>
-                        <div>
-                            <label className="form-label" htmlFor="newUserPass">Geçici Şifre</label>
-                            <input
-                                type="text" id="newUserPass" className="form-input"
-                                value={newUserPass} onChange={(e) => setNewUserPass(e.target.value)} required
-                            />
-                        </div>
-                        <button type="submit" className="btn-primary" disabled={addLoading} style={{ height: "46px" }}>
-                            {addLoading ? "Ekleniyor..." : "Kaydet"}
-                        </button>
-                    </form>
-                </div>
-            )}
 
             <div style={{ padding: "10px 0" }}>
                 {loading ? (

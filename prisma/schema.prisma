@@ -11,7 +11,14 @@ datasource db {
 model User {
   id            String         @id @default(cuid())
   name          String
+  surname       String
   tcNo          String         @unique
+  birthDate     String
+  phone         String
+  email         String         @unique
+  city          String
+  district      String
+  schoolName    String
   password      String
   role          String         @default("INSTRUCTOR") // INSTRUCTOR veya ADMIN
   registrations Registration[]
