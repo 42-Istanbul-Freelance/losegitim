@@ -2,7 +2,8 @@ FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat openssl openssl-dev
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.18/main' >> /etc/apk/repositories
+RUN apk add --no-cache libc6-compat openssl openssl-dev gcompat libssl1.1
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
