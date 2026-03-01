@@ -403,7 +403,6 @@ export default function Home() {
 						if (fresh) setSelectedConf(fresh);
 						setRegLoading(false);
 					}}
-					getCategoryBg={getCategoryBg}
 					formatDate={formatDate}
 				/>
 			)}
@@ -411,84 +410,123 @@ export default function Home() {
 	);
 }
 
-function ConferenceModal({ conf, registered, regLoading, onClose, onRegister, getCategoryBg, formatDate }: {
+
+function ConferenceModal({ conf, registered, regLoading, onClose, onRegister, formatDate }: {
 	conf: Conference;
 	registered: boolean;
 	regLoading: boolean;
 	onClose: () => void;
 	onRegister: () => void;
-	getCategoryBg: (cat: string) => string;
 	formatDate: (d: string) => string;
 }) {
+	const gradient =
+		conf.category === "Psikoloji" ? "linear-gradient(135deg,#667eea,#764ba2)" :
+		conf.category === "Sa\u011fl\u0131k" ? "linear-gradient(135deg,#f093fb,#f5576c)" :
+		conf.category === "\u0130leti\u015fim" ? "linear-gradient(135deg,#4facfe,#00f2fe)" :
+		"linear-gradient(135deg,#43e97b,#38f9d7)";
+
 	return (
 		<div
 			onClick={onClose}
 			style={{
 				position: "fixed", inset: 0,
-				background: "rgba(15,23,42,0.5)",
-				backdropFilter: "blur(4px)",
+				background: "rgba(15,23,42,0.65)",
+				backdropFilter: "blur(8px)",
 				display: "flex", alignItems: "center", justifyContent: "center",
-				zIndex: 1000, padding: "20px", boxSizing: "border-box",
+				zIndex: 9999, padding: "16px",
 			}}
 		>
 			<div
-				onClick={e => e.stopPropagation()}
+				onClick={(e) => e.stopPropagation()}
 				style={{
-					background: "#fff",
-					borderRadius: "16px",
-					width: "100%",
-					maxWidth: "420px",
-					maxHeight: "60vh",
-					display: "flex",
-					flexDirection: "column",
-					boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+					width: "100%", maxWidth: "380px",
+					background: "#fff", borderRadius: "20px",
+					boxShadow: "0 24px 80px rgba(0,0,0,0.3)",
 					overflow: "hidden",
+					position: "relative",
 				}}
 			>
-				{/* BAŞLIK SATIRI */}
-				<div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "18px 20px 12px", borderBottom: "1px solid #f1f5f9" }}>
-					<div style={{ flex: 1, marginRight: "12px" }}>
-						<span className="category-tag" style={{ fontSize: "11px", marginBottom: "6px", display: "inline-block" }}>{conf.category}</span>
-						<h2 style={{ fontSize: "16px", fontWeight: "800", color: "#0f172a", margin: 0, lineHeight: 1.3 }}>{conf.title}</h2>
-					</div>
-					<button
-						onClick={onClose}
-						style={{ background: "#f1f5f9", border: "none", borderRadius: "50%", width: "28px", height: "28px", cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", flexShrink: 0 }}
-					>×</button>
+				{/* Gradient Header */}
+				<div style={{
+					background: gradient,
+					padding: "22px 20px 18px",
+					position: "relative",
+				}}>
+					{/* Kapat butonu */}
+					<button onClick={onClose} style={{
+						position: "absolute", top: "12px", right: "12px",
+						background: "rgba(255,255,255,0.25)", border: "none",
+						borderRadius: "50%", width: "28px", height: "28px",
+						fontSize: "16px", color: "#fff", cursor: "pointer",
+						display: "flex", alignItems: "center", justifyContent: "center",
+						fontWeight: "700",
+					}}>\u00d7</button>
+
+					{/* Kategori badge */}
+					<div style={{
+						display: "inline-block",
+						background: "rgba(255,255,255,0.25)",
+						color: "#fff", borderRadius: "20px",
+						padding: "3px 10px", fontSize: "11px",
+						fontWeight: "700", textTransform: "uppercase",
+						letterSpacing: "0.8px", marginBottom: "8px",
+					}}>{conf.category}</div>
+
+					{/* Ba\u015fl\u0131k */}
+					<div style={{
+						color: "#fff", fontSize: "18px",
+						fontWeight: "800", lineHeight: "1.3",
+						paddingRight: "30px",
+						textShadow: "0 1px 3px rgba(0,0,0,0.2)",
+					}}>{conf.title}</div>
 				</div>
 
-				{/* İÇERİK */}
-				<div style={{ overflowY: "auto", flex: 1, padding: "14px 20px" }}>
-					<p style={{ color: "#475569", lineHeight: "1.6", fontSize: "13px", margin: "0 0 14px 0" }}>{conf.description}</p>
-					<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-						<div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#334155" }}>
-							<span>📅</span>
-							<span><strong>Tarih:</strong> {formatDate(conf.date)}</span>
-						</div>
-						<div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#334155" }}>
-							<span>📍</span>
-							<span><strong>Konum:</strong> {conf.location}</span>
-						</div>
-						<div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#334155" }}>
-							<span>👥</span>
-							<span><strong>Kayıtlı:</strong> {conf.registrations?.length ?? 0} kişi</span>
-						</div>
+				{/* \u0130\u00e7erik */}
+				<div style={{ padding: "16px 20px 0" }}>
+					{/* A\u00e7\u0131klama */}
+					<p style={{
+						color: "#475569", fontSize: "13px",
+						lineHeight: "1.6", margin: "0 0 14px",
+					}}>{conf.description}</p>
+
+					{/* Detay pill\u2019lar\u0131 */}
+					<div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "16px" }}>
+						{[
+							{ icon: "\ud83d\udcc5", text: formatDate(conf.date) },
+							{ icon: "\ud83d\udccd", text: conf.location },
+							{ icon: "\ud83d\udc65", text: `${conf.registrations?.length ?? 0} ki\u015fi` },
+						].map(({ icon, text }) => (
+							<div key={text} style={{
+								display: "flex", alignItems: "center", gap: "5px",
+								background: "#f1f5f9", borderRadius: "20px",
+								padding: "5px 12px", fontSize: "12px",
+								fontWeight: "600", color: "#334155",
+							}}>
+								<span style={{ fontSize: "13px" }}>{icon}</span> {text}
+							</div>
+						))}
 					</div>
 				</div>
 
-				{/* KAYIT BUTONU */}
-				<div style={{ padding: "12px 20px", borderTop: "1px solid #f1f5f9", background: "#fafafa" }}>
+				{/* Buton */}
+				<div style={{ padding: "0 20px 20px" }}>
 					<button
 						disabled={regLoading}
 						onClick={onRegister}
-						className={registered ? "btn-secondary" : "btn-primary"}
-						style={{ width: "100%", padding: "11px", fontSize: "14px", fontWeight: "700", opacity: regLoading ? 0.7 : 1, borderRadius: "10px" }}
+						style={{
+							width: "100%", padding: "12px",
+							background: registered ? "#64748b" : gradient,
+							color: "#fff", border: "none",
+							borderRadius: "12px", fontSize: "14px",
+							fontWeight: "700", cursor: regLoading ? "not-allowed" : "pointer",
+							opacity: regLoading ? 0.7 : 1,
+							transition: "opacity 0.2s",
+						}}
 					>
-						{regLoading ? "İşleniyor..." : registered ? "❌ Kaydı İptal Et" : "✅ Konferansa Kayıt Ol"}
+						{regLoading ? "\u0130\u015fleniyor..." : registered ? "\u274c Kay\u0131t\u0131 \u0130ptal Et" : "\u2705 Kay\u0131t Ol"}
 					</button>
 				</div>
 			</div>
 		</div>
 	);
 }
-
