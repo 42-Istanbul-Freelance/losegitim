@@ -388,97 +388,68 @@ export default function Home() {
 				</div>
 			)}
 			{/* KONFERANS DETAY MODAL */}
-			{selectedConf && (() => {
-				const registered = isUserRegistered(selectedConf);
-				return (
-					<div
-						onClick={() => setSelectedConf(null)}
-						style={{
-							position: "fixed", inset: 0,
-							background: "rgba(15,23,42,0.6)",
-							backdropFilter: "blur(6px)",
-							display: "flex", alignItems: "center", justifyContent: "center",
-							zIndex: 1000, padding: "16px", boxSizing: "border-box",
-						}}
-					>
-						<div
-							onClick={e => e.stopPropagation()}
-							style={{
-								background: "#fff", borderRadius: "20px",
-								width: "100%", maxWidth: "520px",
-								maxHeight: "82vh",
-								display: "flex", flexDirection: "column",
-								boxShadow: "0 32px 80px rgba(0,0,0,0.35)",
-								overflow: "hidden",
-							}}
-						>
-							{/* ---- HEADER ---- */}
-							<div className={`card-img-placeholder ${getCategoryBg(selectedConf.category)}`}
-								style={{ borderRadius: "20px 20px 0 0", height: "90px", flexShrink: 0, fontSize: "32px", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}
-							>✨
-								{/* Kapat */}
-								<button
-									onClick={() => setSelectedConf(null)}
-									style={{
-										position: "absolute", top: "10px", right: "12px",
-										background: "rgba(255,255,255,0.85)", backdropFilter: "blur(4px)",
-										border: "none", borderRadius: "50%",
-										width: "30px", height: "30px", cursor: "pointer",
-										fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center",
-										color: "#334155", fontWeight: "700",
-									}}
-								>×</button>
-							</div>
+			{selectedConf && (
+				<ConferenceModal
+					conf={selectedConf}
+					registered={isUserRegistered(selectedConf)}
+					regLoading={regLoading}
+					onClose={() => setSelectedConf(null)}
+					onRegister={async () => {
+						setRegLoading(true);
+						await handleRegistration(selectedConf.id, isUserRegistered(selectedConf));
+						const res = await fetch(`/api/conferences`);
+						const updated: Conference[] = await res.json();
+						const fresh = updated.find(c => c.id === selectedConf.id);
+						if (fresh) setSelectedConf(fresh);
+						setRegLoading(false);
+					}}
+					getCategoryBg={getCategoryBg}
+					formatDate={formatDate}
+				/>
+			)}
+		</div>
+	);
+}
 
-							{/* ---- SCROLLABLE BODY ---- */}
-							<div style={{ overflowY: "auto", flex: 1, padding: "20px 24px 12px" }}>
-								<span className="category-tag" style={{ marginBottom: "8px", display: "inline-block", fontSize: "12px" }}>{selectedConf.category}</span>
-								<h2 style={{ fontSize: "20px", fontWeight: "800", color: "#0f172a", marginBottom: "10px", lineHeight: 1.3 }}>
-									{selectedConf.title}
-								</h2>
-								<p style={{ color: "#475569", lineHeight: "1.65", fontSize: "14px", marginBottom: "16px", whiteSpace: "pre-wrap" }}>
-									{selectedConf.description}
-								</p>
-								{/* Detay Blokları - 3'lü grid */}
-								<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
-									{[
-										{ icon: "📅", label: "Tarih", value: formatDate(selectedConf.date) },
-										{ icon: "📍", label: "Konum", value: selectedConf.location },
-										{ icon: "👥", label: "Kayıtlı", value: `${selectedConf.registrations?.length ?? 0} kişi` },
-									].map(({ icon, label, value }) => (
-										<div key={label} style={{ background: "#f8fafc", borderRadius: "10px", padding: "10px 12px", border: "1px solid #e2e8f0" }}>
-											<div style={{ fontSize: "18px", marginBottom: "3px" }}>{icon}</div>
-											<p style={{ margin: 0, fontSize: "10px", color: "#94a3b8", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px" }}>{label}</p>
-											<p style={{ margin: 0, fontSize: "12px", fontWeight: "700", color: "#1e293b", marginTop: "2px" }}>{value}</p>
-										</div>
-									))}
-								</div>
+function ConferenceModal({ conf, registered, regLoading, onClose, onRegister, getCategoryBg, formatDate }: {
+	conf: Conference;
+	registered: boolean;
+	regLoading: boolean;
+	onClose: () => void;
+	onRegister: () => void;
+	getCategoryBg: (cat: string) => string;
+	formatDate: (d: string) => string;
+}) {
+	return (
+		<div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "16px", boxSizing: "border-box" }}>
+			<div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", width: "100%", maxWidth: "520px", maxHeight: "82vh", display: "flex", flexDirection: "column", boxShadow: "0 32px 80px rgba(0,0,0,0.35)", overflow: "hidden" }}>
+				<div className={`card-img-placeholder ${getCategoryBg(conf.category)}`} style={{ borderRadius: "20px 20px 0 0", height: "90px", flexShrink: 0, fontSize: "32px", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+					✨
+					<button onClick={onClose} style={{ position: "absolute", top: "10px", right: "12px", background: "rgba(255,255,255,0.85)", backdropFilter: "blur(4px)", border: "none", borderRadius: "50%", width: "30px", height: "30px", cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center", color: "#334155", fontWeight: "700" }}>×</button>
+				</div>
+				<div style={{ overflowY: "auto", flex: 1, padding: "20px 24px 12px" }}>
+					<span className="category-tag" style={{ marginBottom: "8px", display: "inline-block", fontSize: "12px" }}>{conf.category}</span>
+					<h2 style={{ fontSize: "20px", fontWeight: "800", color: "#0f172a", marginBottom: "10px", lineHeight: 1.3 }}>{conf.title}</h2>
+					<p style={{ color: "#475569", lineHeight: "1.65", fontSize: "14px", marginBottom: "16px", whiteSpace: "pre-wrap" }}>{conf.description}</p>
+					<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
+						{[
+							{ icon: "takvim", label: "Tarih", value: formatDate(conf.date) },
+							{ icon: "konum", label: "Konum", value: conf.location },
+							{ icon: "kisi", label: "Kayıtlı", value: `${conf.registrations?.length ?? 0} kişi` },
+						].map(({ icon, label, value }) => (
+							<div key={label} style={{ background: "#f8fafc", borderRadius: "10px", padding: "10px 12px", border: "1px solid #e2e8f0" }}>
+								<p style={{ margin: 0, fontSize: "10px", color: "#94a3b8", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px" }}>{label}</p>
+								<p style={{ margin: 0, fontSize: "12px", fontWeight: "700", color: "#1e293b", marginTop: "2px" }}>{value}</p>
 							</div>
-
-							{/* ---- STICKY FOOTER ---- */}
-							<div style={{ padding: "12px 24px 18px", borderTop: "1px solid #f1f5f9", flexShrink: 0, background: "#fff", borderRadius: "0 0 20px 20px" }}>
-								<button
-									disabled={regLoading}
-									onClick={async () => {
-										setRegLoading(true);
-										await handleRegistration(selectedConf.id, registered);
-										const res = await fetch(`/api/conferences`);
-										const updated: Conference[] = await res.json();
-										const fresh = updated.find(c => c.id === selectedConf.id);
-										if (fresh) setSelectedConf(fresh);
-										setRegLoading(false);
-									}}
-									className={registered ? "btn-secondary" : "btn-primary"}
-									style={{ width: "100%", padding: "13px", fontSize: "15px", fontWeight: "700", opacity: regLoading ? 0.7 : 1, borderRadius: "12px" }}
-								>
-									{regLoading ? "İşleniyor..." : registered ? "❌ Kaydı İptal Et" : "✅ Konferansa Kayıt Ol"}
-								</button>
-							</div>
-						</div>
+						))}
 					</div>
-					</div>
-		);
-		})()}
+				</div>
+				<div style={{ padding: "12px 24px 18px", borderTop: "1px solid #f1f5f9", flexShrink: 0, background: "#fff", borderRadius: "0 0 20px 20px" }}>
+					<button disabled={regLoading} onClick={onRegister} className={registered ? "btn-secondary" : "btn-primary"} style={{ width: "100%", padding: "13px", fontSize: "15px", fontWeight: "700", opacity: regLoading ? 0.7 : 1, borderRadius: "12px" }}>
+						{regLoading ? "İşleniyor..." : registered ? "Kaydı İptal Et" : "Konferansa Kayıt Ol"}
+					</button>
+				</div>
+			</div>
 		</div>
 	);
 }
