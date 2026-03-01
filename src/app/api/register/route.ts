@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 export async function POST(req: Request) {
     try {
         const body = await req.json();
+        console.log("Kayıt İsteği Body:", body);
         const { tcNo, name, surname, birthDate, phone, email, city, district, schoolName, password } = body;
 
         // Basit validasyonlar
@@ -56,8 +57,8 @@ export async function POST(req: Request) {
         const { password: _, ...userWithoutPassword } = newUser;
         return NextResponse.json({ message: "Kayıt işlemi başarıyla tamamlandı!", user: userWithoutPassword }, { status: 201 });
 
-    } catch (error) {
-        console.error("Kullanıcı eklenirken hata:", error);
-        return NextResponse.json({ message: "Sunucu hatası, lütfen tekrar deneyin." }, { status: 500 });
+    } catch (error: any) {
+        console.error("Kullanıcı eklenirken hata detayı:", error?.message || error);
+        return NextResponse.json({ message: "Sunucu hatası: " + (error?.message || "Bilinmiyor, loglara bakınız.") }, { status: 500 });
     }
 }
