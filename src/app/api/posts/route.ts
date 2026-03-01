@@ -21,7 +21,7 @@ export async function GET() {
     }
 }
 
-// Yeni paylaşım oluştur
+// Yeni duyuru oluştur (yalnızca ADMIN)
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -29,6 +29,12 @@ export async function POST(req: Request) {
 
         if (!userId || !content || !eventType) {
             return NextResponse.json({ message: 'Kullanıcı, içerik ve etkinlik türü zorunludur.' }, { status: 400 });
+        }
+
+        // Yalnızca ADMIN kullanıcılar duyuru paylaşabilir
+        const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+        if (!user || user.role !== 'ADMIN') {
+            return NextResponse.json({ message: 'Bu işlem için yetkili (admin) olmanız gerekiyor.' }, { status: 403 });
         }
 
         const post = await prisma.post.create({

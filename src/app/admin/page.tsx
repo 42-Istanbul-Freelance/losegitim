@@ -39,7 +39,7 @@ type Conference = {
     registrations: Registration[];
 };
 
-type Tab = "conferences" | "users";
+type Tab = "conferences" | "users" | "create-conference";
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<Tab>("conferences");
@@ -48,6 +48,15 @@ export default function AdminDashboard() {
     const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(true);
     const [usersLoading, setUsersLoading] = useState(false);
+    // Conference form state
+    const [confTitle, setConfTitle] = useState("");
+    const [confDesc, setConfDesc] = useState("");
+    const [confCategory, setConfCategory] = useState("Sağlık");
+    const [confDate, setConfDate] = useState("");
+    const [confLocation, setConfLocation] = useState("");
+    const [confLoading, setConfLoading] = useState(false);
+    const [confMsg, setConfMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+    const [adminUserId, setAdminUserId] = useState<string | null>(null);
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
     const router = useRouter();
 
@@ -57,6 +66,7 @@ export default function AdminDashboard() {
         if (!storedUser) { router.push("/login"); return; }
         const userData = JSON.parse(storedUser);
         if (userData.role !== "ADMIN") { router.push("/"); return; }
+        setAdminUserId(userData.id);
     }, [router]);
 
     // Konferansları yükle
@@ -92,6 +102,40 @@ export default function AdminDashboard() {
         transition: "all 0.2s",
     } as React.CSSProperties);
 
+    const handleCreateConference = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!adminUserId) return;
+        setConfLoading(true);
+        setConfMsg(null);
+        try {
+            const res = await fetch("/api/admin/create-conference", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: confTitle,
+                    description: confDesc,
+                    category: confCategory,
+                    date: confDate,
+                    location: confLocation,
+                    userId: adminUserId,
+                }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setConfMsg({ type: "success", text: `"${data.title}" konferansı başarıyla oluşturuldu!` });
+                setConfTitle(""); setConfDesc(""); setConfDate(""); setConfLocation("");
+                // Konferans listesini de yenile
+                fetch("/api/admin/conferences").then(r => r.json()).then(setConferences);
+            } else {
+                setConfMsg({ type: "error", text: data.message || "Hata oluştu." });
+            }
+        } catch {
+            setConfMsg({ type: "error", text: "Sunucu hatası." });
+        } finally {
+            setConfLoading(false);
+        }
+    };
+
     return (
         <div className="container fade-in">
             <div style={{ marginBottom: "20px" }}>
@@ -106,6 +150,9 @@ export default function AdminDashboard() {
                 </button>
                 <button style={tabStyle("users")} onClick={() => setActiveTab("users")}>
                     👥 Kullanıcılar
+                </button>
+                <button style={tabStyle("create-conference")} onClick={() => setActiveTab("create-conference")}>
+                    ➕ Konferans Oluştur
                 </button>
             </div>
 
@@ -260,6 +307,60 @@ export default function AdminDashboard() {
                             </div>
                         </div>
                     )}
+                </div>
+            )}
+            {/* KONFERANS OLUŞTUR SEKMESİ */}
+            {activeTab === "create-conference" && (
+                <div style={{ maxWidth: "680px", margin: "0 auto" }}>
+                    <div style={{ background: "var(--white)", borderRadius: "16px", padding: "32px", border: "1px solid #e2e8f0", boxShadow: "var(--shadow-sm)" }}>
+                        <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "24px", color: "var(--text-dark)" }}>+ Yeni Konferans Oluştur</h2>
+
+                        {confMsg && (
+                            <div style={{
+                                padding: "12px 16px", borderRadius: "10px", marginBottom: "20px", fontSize: "14px", fontWeight: "600",
+                                background: confMsg.type === "success" ? "#f0fdf4" : "#fef2f2",
+                                color: confMsg.type === "success" ? "#15803d" : "#dc2626",
+                                border: `1px solid ${confMsg.type === "success" ? "#bbf7d0" : "#fecaca"}`
+                            }}>
+                                {confMsg.text}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleCreateConference} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                            <div>
+                                <label style={{ display: "block", fontWeight: "600", marginBottom: "6px", fontSize: "14px", color: "var(--text-dark)" }}>Başlık *</label>
+                                <input className="form-input" required value={confTitle} onChange={e => setConfTitle(e.target.value)} placeholder="Konferans başlığı" />
+                            </div>
+                            <div>
+                                <label style={{ display: "block", fontWeight: "600", marginBottom: "6px", fontSize: "14px", color: "var(--text-dark)" }}>Açıklama *</label>
+                                <textarea className="form-input" required rows={4} value={confDesc} onChange={e => setConfDesc(e.target.value)} placeholder="Konferans hakkında kısa açıklama..." style={{ resize: "vertical", fontFamily: "inherit" }} />
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                                <div>
+                                    <label style={{ display: "block", fontWeight: "600", marginBottom: "6px", fontSize: "14px", color: "var(--text-dark)" }}>Kategori *</label>
+                                    <select className="form-input" value={confCategory} onChange={e => setConfCategory(e.target.value)}
+                                        style={{ background: "white", cursor: "pointer" }}>
+                                        <option>Sağlık</option>
+                                        <option>Psikoloji</option>
+                                        <option>İletişim</option>
+                                        <option>Eğitim</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: "block", fontWeight: "600", marginBottom: "6px", fontSize: "14px", color: "var(--text-dark)" }}>Tarih &amp; Saat *</label>
+                                    <input className="form-input" type="datetime-local" required value={confDate} onChange={e => setConfDate(e.target.value)} />
+                                </div>
+                            </div>
+                            <div>
+                                <label style={{ display: "block", fontWeight: "600", marginBottom: "6px", fontSize: "14px", color: "var(--text-dark)" }}>Konum *</label>
+                                <input className="form-input" required value={confLocation} onChange={e => setConfLocation(e.target.value)} placeholder="Ör. Ankara LÖSANTE Hastanesi" />
+                            </div>
+                            <button type="submit" className="btn-primary" disabled={confLoading}
+                                style={{ marginTop: "8px", padding: "14px", fontSize: "16px", fontWeight: "700" }}>
+                                {confLoading ? "Oluşturuluyor..." : "✅ Konferansı Oluştur"}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>

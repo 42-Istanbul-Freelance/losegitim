@@ -19,6 +19,7 @@ type User = {
 	name: string;
 	surname?: string;
 	email: string;
+	role?: string;
 };
 
 type Post = {
@@ -35,7 +36,7 @@ export default function Home() {
 	const [posts, setPosts] = useState<Post[]>([]);
 	const [user, setUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(true);
-	const [activeTab, setActiveTab] = useState<"egitimler" | "sosyal">("egitimler");
+	const [activeTab, setActiveTab] = useState<"egitimler" | "duyurular">("egitimler");
 	const [activeCategory, setActiveCategory] = useState("Tümü");
 
 	// Yeni paylaşım form state
@@ -202,16 +203,16 @@ export default function Home() {
 					🎓 Eğitimler
 				</button>
 				<button
-					onClick={() => setActiveTab("sosyal")}
+					onClick={() => setActiveTab("duyurular")}
 					style={{
 						padding: "12px 28px", border: "none", background: "none", cursor: "pointer",
 						fontWeight: "700", fontSize: "16px",
-						color: activeTab === "sosyal" ? "var(--primary-color)" : "var(--text-light)",
-						borderBottom: activeTab === "sosyal" ? "3px solid var(--primary-color)" : "3px solid transparent",
+						color: activeTab === "duyurular" ? "var(--primary-color)" : "var(--text-light)",
+						borderBottom: activeTab === "duyurular" ? "3px solid var(--primary-color)" : "3px solid transparent",
 						marginBottom: "-2px", transition: "all 0.2s"
 					}}
 				>
-					🌟 Sosyal
+					📢 Duyurular
 				</button>
 			</div>
 
@@ -269,79 +270,81 @@ export default function Home() {
 				</div>
 			)}
 
-			{/* SOSYAL SEKMESİ */}
-			{activeTab === "sosyal" && (
+			{/* DUYURULAR SEKMESİ */}
+			{activeTab === "duyurular" && (
 				<div style={{ maxWidth: "720px", margin: "0 auto" }}>
-					{/* Yeni Paylaşım Formu */}
-					<div style={{ background: "var(--white)", borderRadius: "16px", padding: "24px", marginBottom: "28px", boxShadow: "var(--shadow-md)", border: "1px solid #e2e8f0" }}>
-						<h3 style={{ marginBottom: "16px", color: "var(--text-dark)", fontSize: "16px", fontWeight: "700" }}>
-							✍️ Etkinlik Paylaşımı Yap
-						</h3>
+					{/* Duyuru Formu - Yalnızca ADMIN */}
+					{user?.role === 'ADMIN' && (
+						<div style={{ background: "var(--white)", borderRadius: "16px", padding: "24px", marginBottom: "28px", boxShadow: "var(--shadow-md)", border: "1px solid #e2e8f0" }}>
+							<h3 style={{ marginBottom: "16px", color: "var(--text-dark)", fontSize: "16px", fontWeight: "700" }}>
+								📣 Yeni Duyuru Yayınla
+							</h3>
 
-						{postError && (
-							<div style={{ background: "#fee2e2", color: "#991b1b", padding: "10px 14px", borderRadius: "8px", marginBottom: "14px", fontSize: "14px" }}>
-								{postError}
-							</div>
-						)}
-
-						<form onSubmit={handleCreatePost}>
-							<div style={{ marginBottom: "14px" }}>
-								<input
-									type="text"
-									className="form-input"
-									placeholder="Etkinlik türü (örn: Kermes, Bağış, Konser, Spor...)"
-									value={postEventType}
-									onChange={(e) => setPostEventType(e.target.value)}
-									required
-									style={{ marginBottom: "10px" }}
-								/>
-								<textarea
-									className="form-input"
-									placeholder="Katıldığınız etkinliği paylaşın... Emoji de kullanabilirsiniz 🎉"
-									value={postContent}
-									onChange={(e) => setPostContent(e.target.value)}
-									required
-									rows={4}
-									style={{ resize: "vertical", fontFamily: "inherit" }}
-								/>
-							</div>
-
-							{/* Fotoğraf Önizleme */}
-							{postImage && (
-								<div style={{ marginBottom: "14px", position: "relative", display: "inline-block" }}>
-									<img src={postImage} alt="Önizleme" style={{ maxHeight: "200px", borderRadius: "10px", maxWidth: "100%" }} />
-									<button
-										type="button"
-										onClick={() => { setPostImage(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-										style={{ position: "absolute", top: "6px", right: "6px", background: "rgba(0,0,0,0.6)", color: "white", border: "none", borderRadius: "50%", width: "28px", height: "28px", cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}
-									>×</button>
+							{postError && (
+								<div style={{ background: "#fee2e2", color: "#991b1b", padding: "10px 14px", borderRadius: "8px", marginBottom: "14px", fontSize: "14px" }}>
+									{postError}
 								</div>
 							)}
 
-							<div style={{ display: "flex", gap: "10px", alignItems: "center", marginTop: "8px" }}>
-								<label htmlFor="post-image" style={{ cursor: "pointer", padding: "8px 14px", background: "#f1f5f9", borderRadius: "8px", fontSize: "14px", fontWeight: "600", color: "var(--text-dark)", whiteSpace: "nowrap" }}>
-									📷 Fotoğraf Ekle
-								</label>
-								<input
-									id="post-image"
-									type="file"
-									accept="image/*"
-									style={{ display: "none" }}
-									ref={fileInputRef}
-									onChange={handleImageChange}
-								/>
-								<button type="submit" className="btn-primary" disabled={postLoading} style={{ marginLeft: "auto", minWidth: "140px" }}>
-									{postLoading ? "Paylaşılıyor..." : "🚀 Paylaş"}
-								</button>
-							</div>
-						</form>
-					</div>
+							<form onSubmit={handleCreatePost}>
+								<div style={{ marginBottom: "14px" }}>
+									<input
+										type="text"
+										className="form-input"
+										placeholder="Etkinlik türü (örn: Kermes, Bağış, Konser, Spor...)"
+										value={postEventType}
+										onChange={(e) => setPostEventType(e.target.value)}
+										required
+										style={{ marginBottom: "10px" }}
+									/>
+									<textarea
+										className="form-input"
+										placeholder="Katıldığınız etkinliği paylaşın... Emoji de kullanabilirsiniz 🎉"
+										value={postContent}
+										onChange={(e) => setPostContent(e.target.value)}
+										required
+										rows={4}
+										style={{ resize: "vertical", fontFamily: "inherit" }}
+									/>
+								</div>
 
-					{/* Paylaşım Listesi */}
+								{/* Fotoğraf Önizleme */}
+								{postImage && (
+									<div style={{ marginBottom: "14px", position: "relative", display: "inline-block" }}>
+										<img src={postImage} alt="Önizleme" style={{ maxHeight: "200px", borderRadius: "10px", maxWidth: "100%" }} />
+										<button
+											type="button"
+											onClick={() => { setPostImage(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+											style={{ position: "absolute", top: "6px", right: "6px", background: "rgba(0,0,0,0.6)", color: "white", border: "none", borderRadius: "50%", width: "28px", height: "28px", cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}
+										>×</button>
+									</div>
+								)}
+
+								<div style={{ display: "flex", gap: "10px", alignItems: "center", marginTop: "8px" }}>
+									<label htmlFor="post-image" style={{ cursor: "pointer", padding: "8px 14px", background: "#f1f5f9", borderRadius: "8px", fontSize: "14px", fontWeight: "600", color: "var(--text-dark)", whiteSpace: "nowrap" }}>
+										📷 Fotoğraf Ekle
+									</label>
+									<input
+										id="post-image"
+										type="file"
+										accept="image/*"
+										style={{ display: "none" }}
+										ref={fileInputRef}
+										onChange={handleImageChange}
+									/>
+									<button type="submit" className="btn-primary" disabled={postLoading} style={{ marginLeft: "auto", minWidth: "140px" }}>
+										{postLoading ? "Paylaşılıyor..." : "🚀 Paylaş"}
+									</button>
+								</div>
+							</form>
+						</div>
+					)}
+
+					{/* Duyuru Listesi */}
 					{posts.length === 0 ? (
 						<div style={{ textAlign: "center", padding: "50px", color: "var(--text-light)" }}>
-							<div style={{ fontSize: "48px", marginBottom: "12px" }}>🌟</div>
-							<p style={{ fontSize: "16px" }}>Henüz paylaşım yok. İlk paylaşımı siz yapın!</p>
+							<div style={{ fontSize: "48px", marginBottom: "12px" }}>📢</div>
+							<p style={{ fontSize: "16px" }}>Henüz duyuru yok.</p>
 						</div>
 					) : (
 						<div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
