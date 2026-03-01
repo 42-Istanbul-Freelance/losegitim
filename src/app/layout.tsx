@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 		const storedUser = localStorage.getItem("user");
 		if (storedUser) {
 			setUser(JSON.parse(storedUser));
-		} else if (pathname !== '/login') {
+		} else if (pathname !== '/login' && pathname !== '/register') {
 			// Login sayfasında değilse ve giriş yapılmamışsa yönlendir
 			router.push('/login');
 		}
@@ -52,7 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				</main>
 
 				<footer className="footer">
-					<p>&copy; {new Date().getFullYear()} LÖSEV Konferans Sistemi - Eğitmen Arayüzü <span style={{ opacity: 0.7, fontSize: "0.9em", marginLeft: "10px" }}>| Sürüm: v1.3.0 (Docker DB Fix)</span></p>
+					<p>&copy; {new Date().getFullYear()} LÖSEV Konferans Sistemi - Eğitmen Arayüzü <span style={{ opacity: 0.7, fontSize: "0.9em", marginLeft: "10px" }}>| Sürüm: v1.4.0 (Register Fix)</span></p>
 				</footer>
 			</body>
 		</html>
