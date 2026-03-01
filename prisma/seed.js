@@ -4,7 +4,7 @@ const prisma = new PrismaClient()
 async function main() {
     const user = await prisma.user.upsert({
         where: { tcNo: '12345678912' },
-        update: {},
+        update: { role: 'ADMIN' },
         create: {
             tcNo: '12345678912',
             name: 'Örnek Eğitmen',

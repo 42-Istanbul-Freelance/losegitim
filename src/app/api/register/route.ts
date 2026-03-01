@@ -46,7 +46,7 @@ export async function POST(req: Request) {
                 district,
                 schoolName,
                 password, // Not: Gerçek projede bcrypt ile şifrelenmeli
-                role: "INSTRUCTOR", // Varsayılan rol
+                role: "STUDENT", // Varsayılan rol
             }
         });
 

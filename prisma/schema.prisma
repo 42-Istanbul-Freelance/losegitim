@@ -20,7 +20,7 @@ model User {
   district      String
   schoolName    String
   password      String
-  role          String         @default("INSTRUCTOR") // INSTRUCTOR veya ADMIN
+  role          String         @default("STUDENT") // STUDENT veya ADMIN
   registrations Registration[]
   posts         Post[]
   createdAt     DateTime       @default(now())

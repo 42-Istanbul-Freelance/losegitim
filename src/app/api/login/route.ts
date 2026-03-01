@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     // Basit bir güvenlik, hashleme şimdilik atlanıyor
     if (user && user.password === password) {
       return NextResponse.json(
-        { message: "Giriş başarılı!", user: { id: user.id, name: user.name, tcNo: user.tcNo } },
+        { message: "Giriş başarılı!", user: { id: user.id, name: user.name, tcNo: user.tcNo, role: user.role } },
         { status: 200 }
       );
     } else {
