@@ -394,73 +394,74 @@ export default function Home() {
 					<div
 						onClick={() => setSelectedConf(null)}
 						style={{
-							position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)",
+							position: "fixed", inset: 0,
+							background: "rgba(15,23,42,0.6)",
+							backdropFilter: "blur(6px)",
 							display: "flex", alignItems: "center", justifyContent: "center",
-							zIndex: 1000, padding: "20px", boxSizing: "border-box",
+							zIndex: 1000, padding: "16px", boxSizing: "border-box",
 						}}
 					>
 						<div
 							onClick={e => e.stopPropagation()}
 							style={{
-								background: "var(--white)", borderRadius: "24px",
-								width: "100%", maxWidth: "600px", maxHeight: "90vh",
-								overflowY: "auto", boxShadow: "0 24px 60px rgba(0,0,0,0.3)",
-								animation: "fadeIn 0.2s ease",
+								background: "#fff", borderRadius: "20px",
+								width: "100%", maxWidth: "520px",
+								maxHeight: "82vh",
+								display: "flex", flexDirection: "column",
+								boxShadow: "0 32px 80px rgba(0,0,0,0.35)",
+								overflow: "hidden",
 							}}
 						>
-							{/* Modal Header - Renk Bant */}
+							{/* ---- HEADER ---- */}
 							<div className={`card-img-placeholder ${getCategoryBg(selectedConf.category)}`}
-								style={{ borderRadius: "24px 24px 0 0", height: "130px", fontSize: "48px" }}
-							>✨</div>
-
-							<div style={{ padding: "28px 32px 32px" }}>
-								{/* Kapat butonu */}
+								style={{ borderRadius: "20px 20px 0 0", height: "90px", flexShrink: 0, fontSize: "32px", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}
+							>✨
+								{/* Kapat */}
 								<button
 									onClick={() => setSelectedConf(null)}
-									style={{ float: "right", background: "#f1f5f9", border: "none", borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "-60px", position: "relative", zIndex: 1 }}
+									style={{
+										position: "absolute", top: "10px", right: "12px",
+										background: "rgba(255,255,255,0.85)", backdropFilter: "blur(4px)",
+										border: "none", borderRadius: "50%",
+										width: "30px", height: "30px", cursor: "pointer",
+										fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center",
+										color: "#334155", fontWeight: "700",
+									}}
 								>×</button>
+							</div>
 
-								<span className="category-tag" style={{ marginBottom: "10px", display: "inline-block" }}>{selectedConf.category}</span>
-								<h2 style={{ fontSize: "24px", fontWeight: "800", color: "var(--text-dark)", marginBottom: "16px", lineHeight: 1.3 }}>
+							{/* ---- SCROLLABLE BODY ---- */}
+							<div style={{ overflowY: "auto", flex: 1, padding: "20px 24px 12px" }}>
+								<span className="category-tag" style={{ marginBottom: "8px", display: "inline-block", fontSize: "12px" }}>{selectedConf.category}</span>
+								<h2 style={{ fontSize: "20px", fontWeight: "800", color: "#0f172a", marginBottom: "10px", lineHeight: 1.3 }}>
 									{selectedConf.title}
 								</h2>
-
-								<p style={{ color: "var(--text-dark)", lineHeight: "1.7", fontSize: "15px", marginBottom: "24px", whiteSpace: "pre-wrap" }}>
+								<p style={{ color: "#475569", lineHeight: "1.65", fontSize: "14px", marginBottom: "16px", whiteSpace: "pre-wrap" }}>
 									{selectedConf.description}
 								</p>
-
-								{/* Detay Bilgileri */}
-								<div style={{ background: "#f8fafc", borderRadius: "14px", padding: "18px", marginBottom: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
-									<div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "15px" }}>
-										<span style={{ fontSize: "20px" }}>📅</span>
-										<div>
-											<p style={{ margin: 0, fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>Tarih &amp; Saat</p>
-											<p style={{ margin: 0, fontWeight: "700", color: "var(--text-dark)" }}>{formatDate(selectedConf.date)}</p>
+								{/* Detay Blokları - 3'lü grid */}
+								<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
+									{[
+										{ icon: "📅", label: "Tarih", value: formatDate(selectedConf.date) },
+										{ icon: "📍", label: "Konum", value: selectedConf.location },
+										{ icon: "👥", label: "Kayıtlı", value: `${selectedConf.registrations?.length ?? 0} kişi` },
+									].map(({ icon, label, value }) => (
+										<div key={label} style={{ background: "#f8fafc", borderRadius: "10px", padding: "10px 12px", border: "1px solid #e2e8f0" }}>
+											<div style={{ fontSize: "18px", marginBottom: "3px" }}>{icon}</div>
+											<p style={{ margin: 0, fontSize: "10px", color: "#94a3b8", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px" }}>{label}</p>
+											<p style={{ margin: 0, fontSize: "12px", fontWeight: "700", color: "#1e293b", marginTop: "2px" }}>{value}</p>
 										</div>
-									</div>
-									<div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "15px" }}>
-										<span style={{ fontSize: "20px" }}>📍</span>
-										<div>
-											<p style={{ margin: 0, fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>Konum</p>
-											<p style={{ margin: 0, fontWeight: "700", color: "var(--text-dark)" }}>{selectedConf.location}</p>
-										</div>
-									</div>
-									<div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "15px" }}>
-										<span style={{ fontSize: "20px" }}>👥</span>
-										<div>
-											<p style={{ margin: 0, fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>Kayıtlı Katılımcı</p>
-											<p style={{ margin: 0, fontWeight: "700", color: "var(--text-dark)" }}>{selectedConf.registrations?.length ?? 0} kişi</p>
-										</div>
-									</div>
+									))}
 								</div>
+							</div>
 
-								{/* Kayıt Butonu */}
+							{/* ---- STICKY FOOTER ---- */}
+							<div style={{ padding: "12px 24px 18px", borderTop: "1px solid #f1f5f9", flexShrink: 0, background: "#fff", borderRadius: "0 0 20px 20px" }}>
 								<button
 									disabled={regLoading}
 									onClick={async () => {
 										setRegLoading(true);
 										await handleRegistration(selectedConf.id, registered);
-										// Seçilen konferansı güncel kayıt listesiyle yenile
 										const res = await fetch(`/api/conferences`);
 										const updated: Conference[] = await res.json();
 										const fresh = updated.find(c => c.id === selectedConf.id);
@@ -468,15 +469,16 @@ export default function Home() {
 										setRegLoading(false);
 									}}
 									className={registered ? "btn-secondary" : "btn-primary"}
-									style={{ width: "100%", padding: "15px", fontSize: "16px", fontWeight: "700", opacity: regLoading ? 0.7 : 1 }}
+									style={{ width: "100%", padding: "13px", fontSize: "15px", fontWeight: "700", opacity: regLoading ? 0.7 : 1, borderRadius: "12px" }}
 								>
 									{regLoading ? "İşleniyor..." : registered ? "❌ Kaydı İptal Et" : "✅ Konferansa Kayıt Ol"}
 								</button>
 							</div>
 						</div>
 					</div>
-				);
-			})()}
+					</div>
+		);
+		})()}
 		</div>
 	);
 }
