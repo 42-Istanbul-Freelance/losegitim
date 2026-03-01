@@ -36,8 +36,13 @@ const [conferences, setConferences] = useState<Conference[]>([]);
 const [posts, setPosts] = useState<Post[]>([]);
 const [user, setUser] = useState<User | null>(null);
 const [loading, setLoading] = useState(true);
-const [activeTab, setActiveTab] = useState<"egitimler" | "duyurular">("egitimler");
+const [activeTab, setActiveTab] = useState<"egitimler" | "duyurular" | "abone">("egitimler");
+// counters for diff notifications
+const confCountRef = useRef<number>(0);
+const postCountRef = useRef<number>(0);
+const pollInitialized = useRef(false);
 const [activeCategory, setActiveCategory] = useState("Tümü");
+const activeCategoryRef = useRef("Tümü");
 const [selectedConf, setSelectedConf] = useState<Conference | null>(null);
 const [regLoading, setRegLoading] = useState(false);
 
@@ -65,7 +70,7 @@ const fetchConferences = async (category = "Tümü") => {
 try {
 setLoading(true);
 const url = category === "Tümü" ? "/api/conferences" : `/api/conferences?category=${category}`;
-const res = await fetch(url);
+const res = await fetch(url, { cache: "no-store" });
 const data = await res.json();
 setConferences(data);
 } catch (error) {
@@ -77,12 +82,66 @@ setLoading(false);
 
 const fetchPosts = async () => {
 try {
-const res = await fetch("/api/posts");
+const res = await fetch("/api/posts", { cache: "no-store" });
 const data = await res.json();
-setPosts(Array.isArray(data) ? data : []);
+const arr = Array.isArray(data) ? data : [];
+setPosts(arr);
 } catch (error) {
 console.error("Paylaşımlar yüklenemedi", error);
 }
+};
+
+// background poll – checks for new content and updates UI live
+const silentPoll = async (currentCategory = "Tümü") => {
+try {
+const catUrl = currentCategory === "Tümü" ? "/api/conferences" : `/api/conferences?category=${encodeURIComponent(currentCategory)}`;
+const [allCRes, catCRes, pRes] = await Promise.all([
+  fetch("/api/conferences", { cache: "no-store" }),   // for counting
+  fetch(catUrl,             { cache: "no-store" }),   // for display
+  fetch("/api/posts",       { cache: "no-store" }),   // posts
+]);
+const allConferences = await allCRes.json();
+const catConferences = await catCRes.json();
+const posts          = await pRes.json();
+
+const newConfCount = Array.isArray(allConferences) ? allConferences.length : 0;
+const newPostCount = Array.isArray(posts)          ? posts.length          : 0;
+
+// always refresh displayed lists live
+if (Array.isArray(catConferences)) setConferences(catConferences);
+if (Array.isArray(posts))          setPosts(posts);
+
+// read persisted baselines (survive page refreshes / navigation)
+const savedConf = localStorage.getItem("notif_seen_conf");
+const savedPost = localStorage.getItem("notif_seen_post");
+
+if (savedConf === null || savedPost === null) {
+  localStorage.setItem("notif_seen_conf", String(newConfCount));
+  localStorage.setItem("notif_seen_post", String(newPostCount));
+  confCountRef.current = newConfCount;
+  postCountRef.current = newPostCount;
+  pollInitialized.current = true;
+  return;
+}
+
+const lastConf = parseInt(savedConf, 10);
+const lastPost = parseInt(savedPost, 10);
+
+if (newConfCount > lastConf) {
+  const diff = newConfCount - lastConf;
+  window.dispatchEvent(new CustomEvent('newNotif', { detail: `🆕 ${diff} yeni eğitim eklendi!` }));
+  localStorage.setItem("notif_seen_conf", String(newConfCount));
+}
+if (newPostCount > lastPost) {
+  const diff = newPostCount - lastPost;
+  window.dispatchEvent(new CustomEvent('newNotif', { detail: `📢 ${diff} yeni duyuru yayınlandı!` }));
+  localStorage.setItem("notif_seen_post", String(newPostCount));
+}
+
+confCountRef.current = newConfCount;
+postCountRef.current = newPostCount;
+pollInitialized.current = true;
+} catch { /* silent */ }
 };
 
 useEffect(() => {
@@ -91,6 +150,10 @@ if (storedUser) {
 setUser(JSON.parse(storedUser));
 fetchConferences();
 fetchPosts();
+// run a poll immediately to set baselines, then every 10s
+silentPoll(activeCategoryRef.current);
+const interval = setInterval(() => silentPoll(activeCategoryRef.current), 10000);
+return () => clearInterval(interval);
 } else {
 router.push("/login");
 }
@@ -98,6 +161,7 @@ router.push("/login");
 
 const handleCategoryChange = (category: string) => {
 setActiveCategory(category);
+activeCategoryRef.current = category;
 fetchConferences(category);
 };
 
@@ -161,11 +225,13 @@ imageUrl: postImage || undefined,
 }),
 });
 if (res.ok) {
+// also refresh UI and trigger poll so bell badge updates
+fetchPosts();
+silentPoll(activeCategoryRef.current);
 setPostContent("");
 setPostEventType("");
 setPostImage(null);
 if (fileInputRef.current) fileInputRef.current.value = "";
-fetchPosts();
 } else {
 const d = await res.json();
 setPostError(d.message);
@@ -194,9 +260,11 @@ if (!user) return null;
 
 return (
 <div className="container fade-in">
-<div className="page-header">
-<h1 className="page-title">Eğitmen Paneli</h1>
-<p className="page-desc">LÖSEV konferanslarına kayıt olun ve toplulukla deneyimlerinizi paylaşın.</p>
+<div className="page-header" style={{position:"relative"}}>
+  <h1 className="page-title">Eğitmen Paneli</h1>
+  <p className="page-desc">LÖSEV konferanslarına kayıt olun ve toplulukla deneyimlerinizi paylaşın.</p>
+  {/* notification bell */}
+
 </div>
 
 {/* Sekme Başlıkları */}
@@ -212,6 +280,18 @@ marginBottom: "-2px", transition: "all 0.2s"
 }}
 >
 🎓 Eğitimler
+</button>
+<button
+onClick={() => setActiveTab("abone")}
+style={{
+padding: "12px 28px", border: "none", background: "none", cursor: "pointer",
+fontWeight: "700", fontSize: "16px",
+color: activeTab === "abone" ? "var(--primary-color)" : "var(--text-light)",
+borderBottom: activeTab === "abone" ? "3px solid var(--primary-color)" : "3px solid transparent",
+marginBottom: "-2px", transition: "all 0.2s"
+}}
+>
+📚 Abonelikler
 </button>
 <button
 onClick={() => setActiveTab("duyurular")}
@@ -287,6 +367,7 @@ e.stopPropagation();
 setSelectedConf(conf);
 setRegLoading(true);
 await handleRegistration(conf.id, registered);
+if (!registered) window.dispatchEvent(new CustomEvent('newNotif', { detail: `✅ "${conf.title}" eğitimine abone olundu.` }));
 await fetchConferences(activeCategory);
 setRegLoading(false);
 setSelectedConf(null);
@@ -312,6 +393,85 @@ fontWeight: "700"
 })}
 </div>
 )}
+</div>
+)}
+
+{/* ABONELİKLER SEKMESİ */}
+{activeTab === "abone" && (
+<div>
+    {loading ? (
+        <div style={{ textAlign: "center", padding: "40px" }}>Yükleniyor...</div>
+    ) : (() => {
+        const mine = conferences.filter(isUserRegistered);
+        return mine.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px", color: "var(--text-light)" }}>
+                Henüz abone olduğunuz bir konferans yok.
+            </div>
+        ) : (
+            <div className="conferences-grid">
+                {mine.map((conf) => {
+                    const registered = isUserRegistered(conf);
+                    return (
+                        <div
+                            key={conf.id}
+                            className="conference-card fade-in"
+                            style={{ display: "flex", flexDirection: "column", height: "100%" }}
+                        >
+                            <div className={`card-img-placeholder ${getCategoryBg(conf.category)}`}>✨</div>
+                            <div className="card-content" style={{ display: "flex", flexDirection: "column", flexGrow: 1, padding: "24px" }}>
+                                <span className="category-tag">{conf.category}</span>
+                                <h3 className="card-title">{conf.title}</h3>
+                                <p className="card-desc" style={{ whiteSpace: "pre-wrap", marginBottom: "20px" }}>
+                                    {conf.description}
+                                </p>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
+                                    <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "10px", border: "1px solid #f1f5f9" }}>
+                                        <div style={{ fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase" }}>Tarih</div>
+                                        <div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-dark)", marginTop: "4px" }}>📅 {formatDate(conf.date)}</div>
+                                    </div>
+                                    <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "10px", border: "1px solid #f1f5f9" }}>
+                                        <div style={{ fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase" }}>Konum</div>
+                                        <div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-dark)", marginTop: "4px" }}>📍 {conf.location}</div>
+                                    </div>
+                                    <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "10px", border: "1px solid #f1f5f9", gridColumn: "span 2" }}>
+                                        <div style={{ fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase" }}>Katılımcı Durumu</div>
+                                        <div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-dark)", marginTop: "4px" }}>👥 {conf.registrations?.length ?? 0} kişi kayıtlı</div>
+                                    </div>
+                                </div>
+                                <div style={{ marginTop: "auto" }}>
+                                    <button
+                                        disabled={regLoading && selectedConf?.id === conf.id}
+                                        onClick={async (e) => {
+                                            e.stopPropagation();
+                                            setSelectedConf(conf);
+                                            setRegLoading(true);
+                                            await handleRegistration(conf.id, registered);
+                                            await fetchConferences(activeCategory);
+                                            setRegLoading(false);
+                                            setSelectedConf(null);
+                                        }}
+                                        className={registered ? "btn-secondary" : "btn-primary"}
+                                        style={{
+                                            width: "100%",
+                                            padding: "14px",
+                                            fontSize: "15px",
+                                            opacity: (regLoading && selectedConf?.id === conf.id) ? 0.7 : 1,
+                                            borderRadius: "12px",
+                                            fontWeight: "700"
+                                        }}
+                                    >
+                                        {regLoading && selectedConf?.id === conf.id
+                                            ? "İşleniyor..."
+                                            : registered ? "❌ Kaydı İptal Et" : "✅ Konferansa Kayıt Ol"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    })()}
 </div>
 )}
 
