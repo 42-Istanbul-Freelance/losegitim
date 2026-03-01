@@ -17,7 +17,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npx prisma generate
-RUN npx prisma db push --accept-data-loss
+RUN npx prisma db push --force-reset
 RUN node prisma/seed.js
 RUN npm run build
 

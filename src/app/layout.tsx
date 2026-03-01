@@ -52,7 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				</main>
 
 				<footer className="footer">
-					<p>&copy; {new Date().getFullYear()} LÖSEV Konferans Sistemi - Eğitmen Arayüzü <span style={{ opacity: 0.7, fontSize: "0.9em", marginLeft: "10px" }}>| Sürüm: v1.2.0 (DB Düzeltmesi)</span></p>
+					<p>&copy; {new Date().getFullYear()} LÖSEV Konferans Sistemi - Eğitmen Arayüzü <span style={{ opacity: 0.7, fontSize: "0.9em", marginLeft: "10px" }}>| Sürüm: v1.3.0 (Docker DB Fix)</span></p>
 				</footer>
 			</body>
 		</html>
