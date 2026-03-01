@@ -48,8 +48,18 @@ const [postLoading, setPostLoading] = useState(false);
 const [postError, setPostError] = useState("");
 const fileInputRef = useRef<HTMLInputElement>(null);
 
-const categories = ["Tümü", "Sağlık", "Psikoloji", "İletişim", "Eğitim"];
+const [categories, setCategories] = useState<string[]>(["Tümü", "Sağlık", "Psikoloji", "İletişim", "Eğitim"]);
 const router = useRouter();
+
+useEffect(() => {
+  const saved = localStorage.getItem("conf_categories");
+  if (saved) {
+    try {
+      const parsed: string[] = JSON.parse(saved);
+      setCategories(["Tümü", ...parsed]);
+    } catch { /* ignore */ }
+  }
+}, []);
 
 const fetchConferences = async (category = "Tümü") => {
 try {

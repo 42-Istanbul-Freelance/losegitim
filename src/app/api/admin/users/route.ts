@@ -26,11 +26,13 @@ export async function GET(req: Request) {
                 tcNo: true,
                 email: true,
                 phone: true,
+                birthDate: true,
                 city: true,
                 district: true,
                 schoolName: true,
                 role: true,
                 createdAt: true,
+                _count: { select: { registrations: true } },
             },
             orderBy: { createdAt: 'desc' },
         });

@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 			<body>
 				<nav className="navbar">
 					<div className="container nav-content">
-						<h1 className="logo">LÖSEV <span>Eğitim</span></h1>
+						<h1 className="logo" onClick={() => router.push("/")} style={{ cursor: "pointer" }}>LÖSEV <span>Eğitim</span></h1>
 
 						<div className="nav-links">
 							{user ? (
@@ -54,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				</main>
 
 				<footer className="footer">
-					<p>&copy; {new Date().getFullYear()} LÖSEV Konferans Sistemi - Eğitmen Arayüzü <span style={{ opacity: 0.7, fontSize: "0.9em", marginLeft: "10px" }}>| Sürüm: v3.0.0 (Inline Cards)</span></p>
+					<p>&copy; {new Date().getFullYear()} LÖSEV Konferans Sistemi - Eğitmen Arayüzü <span style={{ opacity: 0.7, fontSize: "0.9em", marginLeft: "10px" }}>| Sürüm: v3.1.0 (Gelişmiş Yönetim Paneli)</span></p>
 				</footer>
 			</body>
 		</html>
