@@ -54,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				</main>
 
 				<footer className="footer">
-					<p>&copy; {new Date().getFullYear()} LÖSEV Konferans Sistemi - Eğitmen Arayüzü <span style={{ opacity: 0.7, fontSize: "0.9em", marginLeft: "10px" }}>| Sürüm: v1.9.0 (Duyurular & Konferans Oluşturma)</span></p>
+					<p>&copy; {new Date().getFullYear()} LÖSEV Konferans Sistemi - Eğitmen Arayüzü <span style={{ opacity: 0.7, fontSize: "0.9em", marginLeft: "10px" }}>| Sürüm: v2.0.0 (Konferans Modal)</span></p>
 				</footer>
 			</body>
 		</html>

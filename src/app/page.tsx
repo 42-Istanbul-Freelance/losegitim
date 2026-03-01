@@ -38,6 +38,8 @@ export default function Home() {
 	const [loading, setLoading] = useState(true);
 	const [activeTab, setActiveTab] = useState<"egitimler" | "duyurular">("egitimler");
 	const [activeCategory, setActiveCategory] = useState("Tümü");
+	const [selectedConf, setSelectedConf] = useState<Conference | null>(null);
+	const [regLoading, setRegLoading] = useState(false);
 
 	// Yeni paylaşım form state
 	const [postContent, setPostContent] = useState("");
@@ -242,7 +244,12 @@ export default function Home() {
 							{conferences.map((conf) => {
 								const registered = isUserRegistered(conf);
 								return (
-									<div key={conf.id} className="conference-card fade-in">
+									<div
+										key={conf.id}
+										className="conference-card fade-in"
+										onClick={() => setSelectedConf(conf)}
+										style={{ cursor: "pointer" }}
+									>
 										<div className={`card-img-placeholder ${getCategoryBg(conf.category)}`}>✨</div>
 										<div className="card-content">
 											<span className="category-tag">{conf.category}</span>
@@ -254,13 +261,9 @@ export default function Home() {
 												<div className="meta-item">📅 {formatDate(conf.date)}</div>
 												<div className="meta-item">📍 {conf.location}</div>
 											</div>
-											<button
-												onClick={() => handleRegistration(conf.id, registered)}
-												className={registered ? "btn-secondary" : "btn-primary"}
-												style={{ marginTop: "auto", width: "100%" }}
-											>
-												{registered ? "Kaydı İptal Et" : "Kayıt Ol"}
-											</button>
+											<div style={{ marginTop: "auto", paddingTop: "12px", fontSize: "13px", color: "var(--primary-color)", fontWeight: "600", textAlign: "right" }}>
+												{registered ? "✅ Kayıtlısınız" : "Detaylar için tıklayın →"}
+											</div>
 										</div>
 									</div>
 								);
@@ -384,6 +387,96 @@ export default function Home() {
 					)}
 				</div>
 			)}
+			{/* KONFERANS DETAY MODAL */}
+			{selectedConf && (() => {
+				const registered = isUserRegistered(selectedConf);
+				return (
+					<div
+						onClick={() => setSelectedConf(null)}
+						style={{
+							position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)",
+							display: "flex", alignItems: "center", justifyContent: "center",
+							zIndex: 1000, padding: "20px", boxSizing: "border-box",
+						}}
+					>
+						<div
+							onClick={e => e.stopPropagation()}
+							style={{
+								background: "var(--white)", borderRadius: "24px",
+								width: "100%", maxWidth: "600px", maxHeight: "90vh",
+								overflowY: "auto", boxShadow: "0 24px 60px rgba(0,0,0,0.3)",
+								animation: "fadeIn 0.2s ease",
+							}}
+						>
+							{/* Modal Header - Renk Bant */}
+							<div className={`card-img-placeholder ${getCategoryBg(selectedConf.category)}`}
+								style={{ borderRadius: "24px 24px 0 0", height: "130px", fontSize: "48px" }}
+							>✨</div>
+
+							<div style={{ padding: "28px 32px 32px" }}>
+								{/* Kapat butonu */}
+								<button
+									onClick={() => setSelectedConf(null)}
+									style={{ float: "right", background: "#f1f5f9", border: "none", borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "-60px", position: "relative", zIndex: 1 }}
+								>×</button>
+
+								<span className="category-tag" style={{ marginBottom: "10px", display: "inline-block" }}>{selectedConf.category}</span>
+								<h2 style={{ fontSize: "24px", fontWeight: "800", color: "var(--text-dark)", marginBottom: "16px", lineHeight: 1.3 }}>
+									{selectedConf.title}
+								</h2>
+
+								<p style={{ color: "var(--text-dark)", lineHeight: "1.7", fontSize: "15px", marginBottom: "24px", whiteSpace: "pre-wrap" }}>
+									{selectedConf.description}
+								</p>
+
+								{/* Detay Bilgileri */}
+								<div style={{ background: "#f8fafc", borderRadius: "14px", padding: "18px", marginBottom: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
+									<div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "15px" }}>
+										<span style={{ fontSize: "20px" }}>📅</span>
+										<div>
+											<p style={{ margin: 0, fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>Tarih &amp; Saat</p>
+											<p style={{ margin: 0, fontWeight: "700", color: "var(--text-dark)" }}>{formatDate(selectedConf.date)}</p>
+										</div>
+									</div>
+									<div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "15px" }}>
+										<span style={{ fontSize: "20px" }}>📍</span>
+										<div>
+											<p style={{ margin: 0, fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>Konum</p>
+											<p style={{ margin: 0, fontWeight: "700", color: "var(--text-dark)" }}>{selectedConf.location}</p>
+										</div>
+									</div>
+									<div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "15px" }}>
+										<span style={{ fontSize: "20px" }}>👥</span>
+										<div>
+											<p style={{ margin: 0, fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>Kayıtlı Katılımcı</p>
+											<p style={{ margin: 0, fontWeight: "700", color: "var(--text-dark)" }}>{selectedConf.registrations?.length ?? 0} kişi</p>
+										</div>
+									</div>
+								</div>
+
+								{/* Kayıt Butonu */}
+								<button
+									disabled={regLoading}
+									onClick={async () => {
+										setRegLoading(true);
+										await handleRegistration(selectedConf.id, registered);
+										// Seçilen konferansı güncel kayıt listesiyle yenile
+										const res = await fetch(`/api/conferences`);
+										const updated: Conference[] = await res.json();
+										const fresh = updated.find(c => c.id === selectedConf.id);
+										if (fresh) setSelectedConf(fresh);
+										setRegLoading(false);
+									}}
+									className={registered ? "btn-secondary" : "btn-primary"}
+									style={{ width: "100%", padding: "15px", fontSize: "16px", fontWeight: "700", opacity: regLoading ? 0.7 : 1 }}
+								>
+									{regLoading ? "İşleniyor..." : registered ? "❌ Kaydı İptal Et" : "✅ Konferansa Kayıt Ol"}
+								</button>
+							</div>
+						</div>
+					</div>
+				);
+			})()}
 		</div>
 	);
 }
