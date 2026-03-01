@@ -53,18 +53,16 @@ const [postLoading, setPostLoading] = useState(false);
 const [postError, setPostError] = useState("");
 const fileInputRef = useRef<HTMLInputElement>(null);
 
-const [categories, setCategories] = useState<string[]>(["Tümü", "Sağlık", "Psikoloji", "İletişim", "Eğitim"]);
+const [categories, setCategories] = useState<string[]>(["Tümü"]);
 const router = useRouter();
 
-useEffect(() => {
-  const saved = localStorage.getItem("conf_categories");
-  if (saved) {
-    try {
-      const parsed: string[] = JSON.parse(saved);
-      setCategories(["Tümü", ...parsed]);
-    } catch { /* ignore */ }
-  }
-}, []);
+const fetchCategories = async () => {
+  try {
+    const res = await fetch("/api/categories", { cache: "no-store" });
+    const data = await res.json();
+    if (Array.isArray(data)) setCategories(["Tümü", ...data]);
+  } catch { /* ignore */ }
+};
 
 const fetchConferences = async (category = "Tümü") => {
 try {
@@ -99,6 +97,7 @@ const [allCRes, catCRes, pRes] = await Promise.all([
   fetch("/api/conferences", { cache: "no-store" }),   // for counting
   fetch(catUrl,             { cache: "no-store" }),   // for display
   fetch("/api/posts",       { cache: "no-store" }),   // posts
+  fetch("/api/categories",  { cache: "no-store" }).then(r => r.json()).then(data => { if (Array.isArray(data)) setCategories(["Tümü", ...data]); }).catch(()=>{}) as any,
 ]);
 const allConferences = await allCRes.json();
 const catConferences = await catCRes.json();
@@ -148,6 +147,7 @@ useEffect(() => {
 const storedUser = localStorage.getItem("user");
 if (storedUser) {
 setUser(JSON.parse(storedUser));
+fetchCategories();
 fetchConferences();
 fetchPosts();
 // run a poll immediately to set baselines, then every 10s
@@ -342,7 +342,7 @@ style={{ display: "flex", flexDirection: "column", height: "100%" }}
 <div className="card-content" style={{ display: "flex", flexDirection: "column", flexGrow: 1, padding: "24px" }}>
 <span className="category-tag">{conf.category}</span>
 <h3 className="card-title">{conf.title}</h3>
-<p className="card-desc" style={{ whiteSpace: "pre-wrap", marginBottom: "20px" }}>
+<p className="card-desc" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", marginBottom: "20px" }}>
 {conf.description}
 </p>
 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
@@ -386,6 +386,14 @@ fontWeight: "700"
 ? "İşleniyor..."
 : registered ? "❌ Kaydı İptal Et" : "✅ Konferansa Kayıt Ol"}
 </button>
+<button
+onClick={() => router.push(`/conferences/${conf.id}`)}
+style={{ width: "100%", padding: "11px", marginTop: "8px", fontSize: "14px", fontWeight: "600", background: "none", border: "1px solid #e2e8f0", borderRadius: "12px", cursor: "pointer", color: "var(--text-light)", transition: "all 0.2s" }}
+onMouseEnter={e => { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.color = "var(--primary-color)"; e.currentTarget.style.borderColor = "var(--primary-color)"; }}
+onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "var(--text-light)"; e.currentTarget.style.borderColor = "#e2e8f0"; }}
+>
+🔍 Detayları Gör
+</button>
 </div>
 </div>
 </div>
@@ -421,7 +429,7 @@ fontWeight: "700"
                             <div className="card-content" style={{ display: "flex", flexDirection: "column", flexGrow: 1, padding: "24px" }}>
                                 <span className="category-tag">{conf.category}</span>
                                 <h3 className="card-title">{conf.title}</h3>
-                                <p className="card-desc" style={{ whiteSpace: "pre-wrap", marginBottom: "20px" }}>
+                                <p className="card-desc" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", marginBottom: "20px" }}>
                                     {conf.description}
                                 </p>
                                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
@@ -463,6 +471,14 @@ fontWeight: "700"
                                         {regLoading && selectedConf?.id === conf.id
                                             ? "İşleniyor..."
                                             : registered ? "❌ Kaydı İptal Et" : "✅ Konferansa Kayıt Ol"}
+                                    </button>
+                                    <button
+                                        onClick={() => router.push(`/conferences/${conf.id}`)}
+                                        style={{ width: "100%", padding: "11px", marginTop: "8px", fontSize: "14px", fontWeight: "600", background: "none", border: "1px solid #e2e8f0", borderRadius: "12px", cursor: "pointer", color: "var(--text-light)", transition: "all 0.2s" }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.color = "var(--primary-color)"; e.currentTarget.style.borderColor = "var(--primary-color)"; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "var(--text-light)"; e.currentTarget.style.borderColor = "#e2e8f0"; }}
+                                    >
+                                        🔍 Detayları Gör
                                     </button>
                                 </div>
                             </div>

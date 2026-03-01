@@ -131,7 +131,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				</main>
 
 				<footer className="footer">
-					<p>&copy; {new Date().getFullYear()} LÖSEV Konferans Sistemi - Eğitmen Arayüzü <span style={{ opacity: 0.7, fontSize: "0.9em", marginLeft: "10px" }}>| Sürüm: v3.2.0 (Canlı Bildirim &amp; Otomatik Güncelleme)</span></p>
+					<p>&copy; {new Date().getFullYear()} LÖSEV Konferans Sistemi - Eğitmen Arayüzü <span style={{ opacity: 0.7, fontSize: "0.9em", marginLeft: "10px" }}>| Sürüm: v4.0.0 (Detaylı eğitim sayfası &amp; Detaylı yönetim paneli)</span></p>
 				</footer>
 			</body>
 		</html>

@@ -78,12 +78,12 @@ export default function AdminDashboard() {
     const [deleteMsg, setDeleteMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
     const router = useRouter();
 
-    // Kategorileri localStorage'dan yükle
+    // Kategorileri API'dan yükle
     useEffect(() => {
-        const saved = localStorage.getItem("conf_categories");
-        if (saved) {
-            try { setCategories(JSON.parse(saved)); } catch { /* ignore */ }
-        }
+        fetch("/api/categories")
+            .then(r => r.json())
+            .then(data => { if (Array.isArray(data) && data.length > 0) setCategories(data); })
+            .catch(() => {});
     }, []);
 
     // ADMIN kontrolü
