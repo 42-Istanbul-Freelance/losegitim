@@ -247,27 +247,66 @@ export default function Home() {
 									<div
 										key={conf.id}
 										className="conference-card fade-in"
-										onClick={() => setSelectedConf(conf)}
-										style={{ cursor: "pointer" }}
+										style={{ display: "flex", flexDirection: "column", height: "100%" }}
 									>
 										<div className={`card-img-placeholder ${getCategoryBg(conf.category)}`}>✨</div>
-										<div className="card-content">
+										<div className="card-content" style={{ display: "flex", flexDirection: "column", flexGrow: 1, padding: "24px" }}>
 											<span className="category-tag">{conf.category}</span>
 											<h3 className="card-title">{conf.title}</h3>
-											<p className="card-desc">
-												{conf.description.length > 100 ? conf.description.substring(0, 100) + "..." : conf.description}
+											
+											{/* Tam Açıklama */}
+											<p className="card-desc" style={{ whiteSpace: "pre-wrap", marginBottom: "20px" }}>
+												{conf.description}
 											</p>
-											<div className="card-meta">
-												<div className="meta-item">📅 {formatDate(conf.date)}</div>
-												<div className="meta-item">📍 {conf.location}</div>
+											
+											{/* Detaylar Kılavuzu Grid */}
+											<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
+												<div style={{ background: "#f8fafc", padding: "12px", borderRadius: "10px", border: "1px solid #f1f5f9" }}>
+													<div style={{ fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase" }}>Tarih</div>
+													<div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-dark)", marginTop: "4px" }}>📅 {formatDate(conf.date)}</div>
+												</div>
+												<div style={{ background: "#f8fafc", padding: "12px", borderRadius: "10px", border: "1px solid #f1f5f9" }}>
+													<div style={{ fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase" }}>Konum</div>
+													<div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-dark)", marginTop: "4px" }}>📍 {conf.location}</div>
+												</div>
+												<div style={{ background: "#f8fafc", padding: "12px", borderRadius: "10px", border: "1px solid #f1f5f9", gridColumn: "span 2" }}>
+													<div style={{ fontSize: "12px", color: "var(--text-light)", fontWeight: "600", textTransform: "uppercase" }}>Katılımcı Durumu</div>
+													<div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-dark)", marginTop: "4px" }}>👥 {conf.registrations?.length ?? 0} kişi kayıtlı</div>
+												</div>
 											</div>
-											<div style={{ marginTop: "auto", paddingTop: "12px", fontSize: "13px", color: "var(--primary-color)", fontWeight: "600", textAlign: "right" }}>
-												{registered ? "✅ Kayıtlısınız" : "Detaylar için tıklayın →"}
+
+											{/* Kayıt Ol Butonu */}
+											<div style={{ marginTop: "auto" }}>
+												<button
+													disabled={regLoading && selectedConf?.id === conf.id}
+													onClick={async (e) => {
+														e.stopPropagation();
+														setSelectedConf(conf); // geçici olarak loading state için kullanıyoruz
+														setRegLoading(true);
+														await handleRegistration(conf.id, registered);
+														await fetchConferences(); // Refresh list to update count/status
+														setRegLoading(false);
+														setSelectedConf(null);
+													}}
+													className={registered ? "btn-secondary" : "btn-primary"}
+													style={{ 
+														width: "100%", 
+														padding: "14px", 
+														fontSize: "15px", 
+														opacity: (regLoading && selectedConf?.id === conf.id) ? 0.7 : 1,
+														borderRadius: "12px",
+														fontWeight: "700"
+													}}
+												>
+													{regLoading && selectedConf?.id === conf.id 
+														? "İşleniyor..." 
+														: registered ? "❌ Kaydı İptal Et" : "✅ Konferansa Kayıt Ol"}
+												</button>
 											</div>
 										</div>
 									</div>
 								);
-							})}
+							}}
 						</div>
 					)}
 				</div>
@@ -387,24 +426,7 @@ export default function Home() {
 					)}
 				</div>
 			)}
-			{/* KONFERANS DETAY MODAL */}
-			{selectedConf && (
-				<ConferenceModal
-					conf={selectedConf}
-					registered={isUserRegistered(selectedConf)}
-					regLoading={regLoading}
-					onClose={() => setSelectedConf(null)}
-					onRegister={async () => {
-						setRegLoading(true);
-						await handleRegistration(selectedConf.id, isUserRegistered(selectedConf));
-						const res = await fetch(`/api/conferences`);
-						const updated: Conference[] = await res.json();
-						const fresh = updated.find(c => c.id === selectedConf.id);
-						if (fresh) setSelectedConf(fresh);
-						setRegLoading(false);
-					}}
-					formatDate={formatDate}
-				/>
+							
 			)}
 		</div>
 	);
