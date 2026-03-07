@@ -1,6 +1,6 @@
 # LÖSEV Eğitim Platformu / LÖSEV Education Platform
 
-> **v3.1.0** — Gelişmiş Yönetim Paneli / Advanced Admin Dashboard
+> **v4.0.0** — Canlı Bildirimler, Abonelik Yönetimi & Detaylı Eğitim Sayfası / Live Notifications, Subscription Management & Detailed Education Page
 
 ---
 
@@ -89,6 +89,7 @@ src/
 │   ├── admin/page.tsx        # Yönetim paneli
 │   ├── login/page.tsx        # Giriş sayfası
 │   ├── register/page.tsx     # Kayıt sayfası
+│   ├── settings/page.tsx     # Kullanıcı ayarları sayfası
 │   └── api/
 │       ├── conferences/      # Konferans listeleme
 │       ├── posts/            # Duyuru listeleme & oluşturma
@@ -96,6 +97,7 @@ src/
 │       ├── login/            # Giriş
 │       ├── register-conf/    # Konferansa kayıt
 │       ├── unregister-conf/  # Konferans kaydı iptali
+│       ├── user/             # Kullanıcı bilgileri API
 │       └── admin/
 │           ├── conferences/  # Admin: konferans listele / sil
 │           ├── users/        # Admin: kullanıcı listele / sil / rol değiştir
@@ -114,6 +116,12 @@ prisma/
 - ✅ Konferansları kategoriye göre filtreleme
 - ✅ Konferansa kayıt olma / kaydı iptal etme
 - ✅ Duyurular sekmesi (resimli paylaşım desteği)
+- ✅ Canlı bildirim sistemi (yeni eğitim/duyuru bildirimi)
+- ✅ Otomatik sayfa güncelleme (10 saniye aralıklarla)
+- ✅ Abonelikler sekmesi (abone olunan konferansları listeleme)
+- ✅ Kullanıcı ayarları sayfası (`/settings`)
+- ✅ Kullanıcı dropdown menüsü
+- ✅ Detaylı eğitim sayfası
 
 #### Yönetim Paneli (`/admin`)
 - ✅ **Konferanslar** — kategoriye göre gruplu listeleme, katılımcı tablosu
@@ -216,6 +224,7 @@ src/
 │   ├── admin/page.tsx        # Admin dashboard
 │   ├── login/page.tsx        # Login page
 │   ├── register/page.tsx     # Registration page
+│   ├── settings/page.tsx     # User settings page
 │   └── api/
 │       ├── conferences/      # List conferences
 │       ├── posts/            # List & create announcements
@@ -223,6 +232,7 @@ src/
 │       ├── login/            # Authentication
 │       ├── register-conf/    # Subscribe to conference
 │       ├── unregister-conf/  # Unsubscribe from conference
+│       ├── user/             # User info API
 │       └── admin/
 │           ├── conferences/  # Admin: list / delete conferences
 │           ├── users/        # Admin: list / delete / change role
@@ -241,6 +251,12 @@ prisma/
 - ✅ Filter conferences by category
 - ✅ Subscribe / unsubscribe from conferences
 - ✅ Announcements tab with image upload support
+- ✅ Live notification system (new education/announcement alerts)
+- ✅ Auto page refresh (10-second polling)
+- ✅ Subscriptions tab (listing subscribed conferences)
+- ✅ User settings page (`/settings`)
+- ✅ User dropdown menu
+- ✅ Detailed education page
 
 #### Admin Dashboard (`/admin`)
 - ✅ **Conferences** — grouped by category, participant tables
